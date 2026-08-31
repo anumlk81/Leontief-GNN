@@ -1,9 +1,3 @@
-"""
-train_gnn.py (v3)
-Adds richer node features (row-sum, col-sum from A matrix = how much an
-industry supplies vs. consumes) and reduces regularization so the model
-can actually differentiate industries instead of collapsing to a constant.
-"""
 import torch
 import torch.nn.functional as F
 from torch_geometric.nn import GCNConv
@@ -19,14 +13,13 @@ torch.manual_seed(42)
 
 
 def add_structural_features(data, A_year):
-    """Attach row-sum (supplier-ness) and col-sum (input-intensity) from A matrix."""
     A = pd.read_csv(MATRIX_DIR / f"A_{A_year}.csv", index_col=0)
     A = A.reindex(index=data.industry_codes, columns=data.industry_codes).fillna(0.0)
 
     row_sum = torch.tensor(A.sum(axis=1).values, dtype=torch.float).unsqueeze(1)  # supplies to others
     col_sum = torch.tensor(A.sum(axis=0).values, dtype=torch.float).unsqueeze(1)  # consumes from others
 
-    data.x = torch.cat([data.x, row_sum, col_sum], dim=1)  # now 3 features per node
+    data.x = torch.cat([data.x, row_sum, col_sum], dim=1)  
     return data
 
 
@@ -35,7 +28,7 @@ class IOGNN(torch.nn.Module):
         super().__init__()
         self.conv1 = GCNConv(in_dim, hidden)
         self.conv2 = GCNConv(hidden, 1)
-        self.skip = torch.nn.Linear(in_dim, 1)  # lets model retain per-node identity
+        self.skip = torch.nn.Linear(in_dim, 1)  
 
     def forward(self, x, edge_index, edge_weight):
         h = F.relu(self.conv1(x, edge_index, edge_weight))
@@ -55,7 +48,6 @@ def main():
     train_data = add_structural_features(train_data, "2007")
     val_data = add_structural_features(val_data, "2012")
 
-    # standardize using TRAIN stats only
     x_mean, x_std = train_data.x.mean(dim=0), train_data.x.std(dim=0)
     train_x_norm = (train_data.x - x_mean) / x_std
     val_x_norm = (val_data.x - x_mean) / x_std
