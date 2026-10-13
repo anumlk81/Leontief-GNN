@@ -11,8 +11,7 @@ no-change baseline and (b) the classical Leontief demand-extrapolation model.
 
 ## Data
 
-US Bureau of Economic Analysis (BEA) "Use Table, Before Redefinitions,
-Purchaser Prices, Summary" for 2007, 2012, and 2017 — 68 industries, showing
+US Bureau of Economic Analysis (BEA) for 2007, 2012, and 2017 — 68 industries, showing
 dollar flows of inputs bought by each industry from every other industry.
 
 ## Method
